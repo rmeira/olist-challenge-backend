@@ -1,0 +1,67 @@
+version: "3.7"
+services:
+  redis:
+    image: redis:latest
+    networks:
+      olist-challenge:
+    volumes:
+      - redis:/data
+    ports:
+      - 6379:6379
+    deploy:
+      replicas: 1
+
+  mysql:
+    image: mysql:5.7
+    environment:
+      - MYSQL_DATABASE=olist-challenge
+      - MYSQL_USER=mysql
+      - MYSQL_PASSWORD=mysql@102030
+      - MYSQL_ROOT_PASSWORD=mysql@102030
+    volumes:
+      - mysql:/var/lib/mysql
+    ports:
+      - "3306:3306"
+    networks:
+      olist-challenge:
+    deploy:
+      replicas: 1
+
+  mailhog:
+    image: mailhog/mailhog
+    networks:
+      olist-challenge:
+    ports:
+      - 8025:8025
+      - 1025:1025
+    deploy:
+      replicas: 1
+      resources:
+        limits:
+          cpus: "0.50"
+          memory: 200M
+
+  backend:
+    image: rafaelmit/docker-php-8.0-local-laravel-development
+    volumes:
+      - ./:/var/www
+    depends_on:
+      - redis
+      - mysql
+    ports:
+      - 80:80
+    networks:
+      olist-challenge:
+    deploy:
+      replicas: 1
+      resources:
+        limits:
+          cpus: "0.50"
+          memory: 350M
+
+networks:
+  olist-challenge:
+
+volumes:
+  redis:
+  mysql:
